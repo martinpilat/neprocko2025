@@ -5,7 +5,7 @@ prvek(_, []):-write("Jsem uplne prazdny").
 prvek(X, [X|_]).
 prvek(X, [_|Xs]):-prvek(X, Xs).
 
-kapacity(5,3).
+:- dynamic kapacity/2.
 
 %dalsi(+S, -DS):-DS je stav jednim krokem dostazitelny z S
 dalsi(_-V2, 0-V2).
@@ -18,5 +18,31 @@ dalsi(V1-V2, NV1-NV2):-kapacity(C1, C2), C1 >= V2 + V1, NV2=0, NV1 is V2 + V1.
 dalsi(V1-V2, NV1-NV2):-kapacity(C1, C2), C1 < V2 + V1, NV2 is V2 + V1 - C1, NV1 is C1.
 
 %vyres(+PS, +KS):-z pocatecniho stavu PS se lze dostat do koncoveho KS
-vyres(PS, PS).
-vyres(PS, KS):-dalsi(PS, MS), vyres(MS, KS).
+vyresCyklus(PS, PS). % vzdy se zacykli
+vyresCyklus(PS, KS):-dalsi(PS, MS), vyresCyklus(MS, KS).
+
+vyresDFS(PS, KS, Cesta):-vyresDFS(PS, [PS], KS, Cesta).
+vyresDFS(PS, NS, PS, Cesta):-reverse(NS, Cesta).
+vyresDFS(PS, NS, KS, C):-dalsi(PS, MS), \+member(MS, NS), 
+                         vyresDFS(MS, [MS|NS], KS, C).
+
+heur(_,_,1).
+
+vyresID(PS, KS, Cesta):-heur(PS, KS, H),
+                        between(H,inf,Lim), 
+                        vyresID(PS, [PS], Lim, KS, Cesta),!.
+vyresID(PS, NS, 0, PS, Cesta):-reverse(NS, Cesta).
+vyresID(PS, NS, Lim, KS, C):-heur(PS, KS, H), Lim >= H, Lim1 is Lim - 1,
+                             dalsi(PS, MS), \+member(MS, NS), 
+                             vyresID(MS, [MS|NS], Lim1, KS, C).
+
+vyres(PS, KS, C1, C2, C):-assert(kapacity(C1, C2)), vyresID(PS, KS, C).
+
+graf(grafsn([1,2,3,4], [1->[2,4], 2->[3], 3->[4,2], 4->[1,2,3]])).
+
+%map(+S, @F, -Y):-aplikuje F(A, B) na vsechny prvky A 
+%                        seznamu S a ulozi B do Y
+map([], _, []).
+map([X|Xs], F, [Y|Ys]):-call(F, X, Y), map(Xs, F, Ys).
+
+pricti1(X, Y):-Y is X+1.
