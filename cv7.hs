@@ -18,5 +18,3 @@ myZip (x:xs) (y:ys) = (x, y):myZip xs ys
 pricitatko1 = myMap pricti1
 
 main = print $ myMap pricti1 [1,2,3]
-
---prime n = all [2..(n-1)]
