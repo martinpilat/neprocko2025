@@ -1,4 +1,5 @@
 import Control.Applicative (Applicative)
+import Foreign (peekArray)
 data Mozna a = Proste a | Nic deriving Show 
 
 najdi::Eq a => [(a, b)] -> a -> Mozna b
@@ -51,3 +52,15 @@ instance Applicative Mozna where
 
 instance Monad Mozna where
     (>>=) = andThen
+
+ncpz3 pelisky ceny zvire = do
+    -- najdi pelisky zvire >>= (\pelisek -> najdi ceny pelisek)
+    pelisek <- najdi pelisky zvire
+    najdi ceny pelisek
+
+ncpz4 pelisky ceny zvire1 zvire2 = do 
+    pel1 <- najdi pelisky zvire1
+    c1 <- najdi ceny pel1
+    pel2 <- najdi pelisky zvire2
+    c2 <- najdi ceny pel2
+    return (c1 + c2)
