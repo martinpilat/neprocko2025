@@ -20,11 +20,29 @@ m = 2^48
 newtype Stav a r = Stav {bez:: a -> (r, a)}
 
 instance Functor (Stav a) where
-    fmap f sar = Stav $ \a -> let (r, ns) = bez sar a in (f r, ns) 
+    fmap f sar = Stav $ \a -> let (r, ns) = bez sar a 
+                              in (f r, ns) 
 
 instance Applicative (Stav a) where
     pure a = Stav $ \s -> (a, s)
-    -- f <*> sar = TODO
+    sab <*> sa = Stav $ \s -> let (ab, ns) = bez sab s 
+                                  (a, ns2) = bez sa ns
+                              in (ab a, ns2)
+
+instance Monad (Stav a) where
+    --(>>=)::Stav s a -> (a -> Stav s b) -> Stav s b
+    h >>= f = Stav $ \s -> let (a, ns) = bez h s
+                               g       = f a 
+                           in  bez g ns
 
 gen :: Stav Integer Integer
 gen = Stav $ \x -> (((a*x + c) `mod` m) `div` 2^17, (a*x + c) `mod` m)
+
+seed :: Integer -> Stav Integer ()
+seed n = Stav $ \_ -> ((), n)
+
+test2 = do
+    seed 11
+    x <- gen
+    y <- gen
+    return $ x+y 
